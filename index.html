@@ -3,6 +3,7 @@
 <head>
     <title>Instascan</title>
     <script type="text/javascript" src="js/jsqrscanner.nocache.js"></script>
+    <script type="text/javascript" src="js/lib.js"></script>
     <!--<script type="text/javascript" src="instascan.min.js"></script>-->
     <meta charset="UTF-8" />
     <!--<meta name="viewport" content="width=device-width, initial-scale=1">-->
@@ -24,18 +25,22 @@
                 </div>
                 <!--<video id="preview" style="width:100%"></video>-->
             </div>
-            <div class="col-6">
-                <ul class="list-group mr-1 shadow-lg">
-                    <li class="list-group-item list-group-item-success">本日:<span id="todaySum">0</span>層樓</li>
-                    <li class="list-group-item list-group-item-warning">本周:<span id="weekSum">0</span>層樓</li>
-                    <li class="list-group-item list-group-item-primary">本月:<span id="monthSum">0</span>層樓</li>
-                </ul>
+            <div class="col-6 pr-2">
+                <div class="mr-2">
+                    <ul class="list-group shadow-lg">
+                        <li class="list-group-item list-group-item-success">本日:<span id="todaySum">0</span>層樓</li>
+                        <li class="list-group-item list-group-item-warning">本周:<span id="weekSum">0</span>層樓</li>
+                        <li class="list-group-item list-group-item-primary">本月:<span id="monthSum">0</span>層樓</li>
+                    </ul>
+                    <div class="btn-group special btn-group-lg mt-3">
+                        <button type="button" class="btn btn-primary" onclick="removeAll()">清空紀錄</button>
+                        <button type="button" class="btn btn-primary" onclick="location.reload()">重載網頁</button>
+                    </div>
+                </div>
             </div>
             <div class="col-12 mt-2">
                 <div id='stairHistory' style="font-size:18px">
-
                 </div>
-                <button onclick="removeAll()" class="btn btn-primary btn-lg">清空紀錄</button>
             </div>
         </div>
     </div>
@@ -52,6 +57,12 @@
         .list-group {
             font-size: 60px
         }
+        .btn-group.special {
+            display: flex;
+        }
+        .special .btn {
+            flex: 1
+        }
     </style>
     
     <script type="text/javascript">
@@ -60,13 +71,7 @@
         var existedArray;
         var barcodeStorageKey = 'barcode'
          
-         Array.prototype.sum = function (prop) {
-            var total = 0
-            for ( var i = 0, _len = this.length; i < _len; i++ ) {
-                total += this[i][prop]
-            }
-            return total
-        }
+
         main();
 
         function main(){
@@ -125,6 +130,7 @@
                     newObject.st = new Date()//start time
                     newObject.sl = newScan.lv;//start level
                     newObject.v = newScan.ver;
+                    newObject.diff = 0;
                     existedArray.push(newObject)
                     showMessage('刷條碼成功, 從'+newScan.lv+'樓進入');
                     
@@ -157,9 +163,11 @@
             }
         }
         function removeAll(){
-            localStorage.removeItem(barcodeStorageKey);
-            refreshArray();
-            showArray();
+            if(confirm("是否清除所有紀錄?")){
+                localStorage.removeItem(barcodeStorageKey);
+                refreshArray();
+                showArray();
+            }
         }
         function showArray(topNo){
             if(!topNo){
@@ -201,12 +209,7 @@
             document.getElementById("monthSum").innerHTML = monthArray.sum('diff');
         }
        
-        function getMonday(d) {
-          d = new Date(d);
-          var day = d.getDay(),
-              diff = d.getDate() - day + (day == 0 ? -6:1); // adjust when day is sunday
-          return new Date(d.setDate(diff));
-        }
+
         function addMessage(str){
             document.getElementById("message").innerHTML += str;
         }
@@ -294,22 +297,7 @@
     	    }
         }
 
-        function localStorageSpace (){
-            var data = '';
-            //console.log('Current local storage: ');
-            for(var key in window.localStorage){
-                if(window.localStorage.hasOwnProperty(key)){
-                    data += window.localStorage[key];
-                    console.log( key + " = " + ((window.localStorage[key].length * 16)/(8 * 1024)).toFixed(2) + ' KB' );
-                }
-            }
-            var used = data ? ((data.length * 16)/(8 * 1024)).toFixed(2) : 0;
-            var total = data ? (5120 - ((data.length * 16)/(8 * 1024)).toFixed(0)) : 1024*5;
-            //console.log(data ? '\n' + 'Total space used: ' + ((data.length * 16)/(8 * 1024)).toFixed(2) + ' KB' : 'Empty (0 KB)');
-            //console.log(data ? 'Approx. space remaining: ' + (5120 - ((data.length * 16)/(8 * 1024)).toFixed(2)) + ' KB' : '5 MB');
 
-            return used+'/'+total+' KB';
-        };
     </script>
 
 </body>
