@@ -39,6 +39,8 @@
                         <li class="list-group-item list-group-item-success">開始: <span id="firstSt"></span> </li>
                         <li class="list-group-item list-group-item-success">結束: <span id="lastEt"></span></li>
                         <li class="list-group-item list-group-item-warning">總計: <span id="totalSum" class="font-weight-bold">0</span>層樓</li>
+                        <li class="list-group-item list-group-item-warning">往上: <span id="totalUpSum" class="font-weight-bold">0</span>層樓</li>
+                        <li class="list-group-item list-group-item-warning">網下: <span id="totalDownSum" class="font-weight-bold">0</span>層樓</li>
                     </ul>
                     <div class="btn-group special btn-group-lg mt-3">
                         <button type="button" class="btn btn-primary border btn1 mr-1" onclick="removeAll()">清空紀錄</button>
@@ -219,6 +221,18 @@
             document.getElementById("firstSt").innerHTML = moment(existedArray[0].st).format('MM-DD HH:mm:ss') ;
             document.getElementById("totalSum").innerHTML = existedArray.sum('diff');
             document.getElementById("lastEt").innerHTML = moment(existedArray[existedArray.length-1].st).format('MM-DD HH:mm:ss');
+            var totalUpSum = 0;
+            var totalDownSum = 0;
+            for (var i = (existedArray.length - 1); i >= 0; i--){
+                if(existedArray[i].el > existedArray[i].sl){
+                    totalUpSum += existedArray[i].el - existedArray[i].sl;
+                }
+                if(existedArray[i].el < existedArray[i].sl){
+                    totalDownSum += existedArray[i].sl - existedArray[i].el;
+                }
+            }
+            document.getElementById("totalUpSum").innerHTML = totalUpSum;
+            document.getElementById("totalDownSum").innerHTML = totalDownSum;
         }
 
         function addMessage(str){
