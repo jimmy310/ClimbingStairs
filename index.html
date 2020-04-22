@@ -8,8 +8,12 @@
     <meta charset="UTF-8" />
     <!--<meta name="viewport" content="width=device-width, initial-scale=1">-->
     <!-- Global site tag (gtag.js) - Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-164242535-1"></script>
+    
     <script>
+      var xhr = new XMLHttpRequest();
+      xhr.onreadystatechange = handleStateChange; // Implemented elsewhere.
+      xhr.open("GET", chrome.extension.getURL('https://www.googletagmanager.com/gtag/js?id=UA-164242535-1'), true);
+      xhr.send();
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
