@@ -4,8 +4,18 @@
     <title>長庚職場運動趣</title>
     <script type="text/javascript" src="js/jsqrscanner.nocache.js"></script>
     <script type="text/javascript" src="js/lib.js?t=1"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
     <meta charset="UTF-8" />
     <!--<meta name="viewport" content="width=device-width, initial-scale=1">-->
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-164242535-1"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-164242535-1');
+    </script>
 </head>
 <body>
     <div class="container-fluid">
@@ -26,13 +36,13 @@
             <div class="col-6 pr-2">
                 <div class="mr-2">
                     <ul class="list-group shadow-lg">
-                        <li class="list-group-item list-group-item-success">本日:<span id="todaySum">0</span>層樓</li>
-                        <li class="list-group-item list-group-item-warning">本周:<span id="weekSum">0</span>層樓</li>
-                        <li class="list-group-item list-group-item-primary">本月:<span id="monthSum">0</span>層樓</li>
+                        <li class="list-group-item list-group-item-success">開始: <span id="firstSt"></span> </li>
+                        <li class="list-group-item list-group-item-success">結束: <span id="lastEt"></span></li>
+                        <li class="list-group-item list-group-item-warning">總計: <span id="totalSum" class="font-weight-bold">0</span>層樓</li>
                     </ul>
                     <div class="btn-group special btn-group-lg mt-3">
-                        <button type="button" class="btn btn-primary" onclick="removeAll()">清空紀錄</button>
-                        <button type="button" class="btn btn-primary" onclick="location.reload()">重載網頁</button>
+                        <button type="button" class="btn btn-primary border btn1 mr-1" onclick="removeAll()">清空紀錄</button>
+                        <button type="button" class="btn btn-primary border btn2" onclick="location.reload()">重載網頁</button>
                     </div>
                 </div>
             </div>
@@ -53,7 +63,7 @@
             font-size: 46px
         }
         .list-group {
-            font-size: 60px
+            font-size: 42px
         }
         .btn-group.special {
             display: flex;
@@ -61,6 +71,7 @@
         .special .btn {
             flex: 1
         }
+        
     </style>
     
     <script type="text/javascript">
@@ -68,7 +79,6 @@
         var lastScanStr="";
         var existedArray;
         var barcodeStorageKey = 'barcode'
-         
 
         main();
 
@@ -130,21 +140,17 @@
                     newObject.v = newScan.ver;
                     newObject.diff = 0;
                     existedArray.push(newObject)
-                    showMessage('刷條碼成功, 從'+newScan.lv+'樓進入');
+                    showMessage('刷條碼成功, 從' + (newScan.lv <= 0 ? '地下'+Math.abs(newScan.lv-1) : newScan.lv)+'樓進入');//因為地下1樓 是0, 地下2樓是-1
                     
                 } else if (newScan.inOut == 'out') {
-                    if (lastObject == null) {
-                        showErrorMessage('無法存取資料, 請先刷進入條碼, 再刷離開條碼');
+                    if (lastObject == null || lastObject.el != null) {
+                        showErrorMessage('尚未刷進入條碼');
                     }else{
-                        if(lastObject.el){
-                            showErrorMessage('尚未刷進入條碼.');
-                        }else{
-                            //lastObject.et = new Date().toLocaleDateString().slice(5,10) +' '+ new Date().toLocaleTimeString();//end time
-                            lastObject.et = new Date();//end time
-                            lastObject.el = newScan.lv;//end level
-                            lastObject.diff = Math.abs(lastObject.el - lastObject.sl);//diff
-                            showMessage('刷條碼成功, 從'+newScan.lv+'樓離開');
-                        }
+                        //lastObject.et = new Date().toLocaleDateString().slice(5,10) +' '+ new Date().toLocaleTimeString();//end time
+                        lastObject.et = new Date();//end time
+                        lastObject.el = newScan.lv;//end level
+                        lastObject.diff = Math.abs(lastObject.el - lastObject.sl);//diff
+                        showMessage('刷條碼成功, 從' + (newScan.lv <= 0 ? '地下' + Math.abs(newScan.lv - 1) : newScan.lv)+'樓離開');
                     }
                 }
                 //store array
@@ -180,7 +186,7 @@
                 for (var i = (existedArray.length - 1); i >= 0; i--) {
                     var existedScan = existedArray[i];
                     var exitInfo = existedScan.el!=null ? existedScan.el + " ("+existedScan.diff+")" : "";
-                    result += `<tr><td>${(i+1)}</td><td>${new Date(existedScan.st).toLocaleString().slice(5,20)}</td><td>${existedScan.sl}→${exitInfo}</td><td></td></tr>`;
+                    result += `<tr><td>${(i+1)}</td><td>${moment(existedScan.st).format('MM-DD HH:mm:ss')}</td><td>${existedScan.sl}→${exitInfo}</td><td></td></tr>`;
                 }
                 result += "</table>";
                 list.innerHTML = result;
@@ -188,7 +194,7 @@
             } else {
                 list.innerHTML = "尚無刷卡紀錄";
             }
-            showSummary();
+            showSummaryNew();
         }
         function showSummary(){
             if (existedArray == null || existedArray.length == 0) {
@@ -206,7 +212,14 @@
             document.getElementById("weekSum").innerHTML = weekArray.sum('diff');
             document.getElementById("monthSum").innerHTML = monthArray.sum('diff');
         }
-       
+        function showSummaryNew(){
+            if (existedArray == null || existedArray.length == 0) {
+                return;
+            }
+            document.getElementById("firstSt").innerHTML = moment(existedArray[0].st).format('MM-DD HH:mm:ss') ;
+            document.getElementById("totalSum").innerHTML = existedArray.sum('diff');
+            document.getElementById("lastEt").innerHTML = moment(existedArray[existedArray.length-1].st).format('MM-DD HH:mm:ss');
+        }
 
         function addMessage(str){
             document.getElementById("message").innerHTML += str;
@@ -294,10 +307,7 @@
     		    jbScanner.appendTo(scannerParentElement);
     	    }
         }
-
-
     </script>
-
 </body>
 </html>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
