@@ -268,7 +268,7 @@
                 });
             }
             else{
-                localStorage.removeItem('barcode');
+                
                 $.ajax({
                    method: "POST",
                    type: JSON,
@@ -281,6 +281,8 @@
                            'application/json');
                    },
                    success: function (data, textStatus, jqXHR) {
+                      localStorage.removeItem('barcode');
+                      showMessage('Remove localStorage success');
                    },
                    error: function (jqXHR, textStatus, errorThrown) {
                       showMessage(errorThrown);
