@@ -261,7 +261,7 @@
                    type: 'GET',
                    async: false,
                    url: apiUrl + 'Get',
-                   data: { userKey: userKey },
+                   data: { userKey: barcodeStorageKey },
                    dataType: "json",
                    success: function (result) {
                       existedArray = JSON.parse(result);
