@@ -286,10 +286,12 @@
                    },
                    success: function (data, textStatus, jqXHR) {
                       localStorage.removeItem('barcode');
-                      showMessage('Remove localStorage success');
+                      alert('Remove localStorage success');
                    },
                    error: function (jqXHR, textStatus, errorThrown) {
-                      showMessage(errorThrown);
+                      alert(jqXHR);
+                      alert(textStatus);
+                      alert(errorThrown);
                    }
                 });
             }
