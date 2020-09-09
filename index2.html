@@ -264,12 +264,12 @@
                    url: apiUrl + 'GetAll',
                    data: JSON.stringify(queryData),
                    dataType: "json",
-                   //crossDomain: true,
+                   crossDomain: true,
                    beforeSend: function (xhr) {
                        xhr.setRequestHeader("Content-Type",
                            'application/json');
                            xhr.setRequestHeader("Access-Control-Allow-Origin",
-                           '*');
+                           'https://jimmy310.github.io');
                            xhr.setRequestHeader("Access-Control-Allow-Methods",
                            'POST, GET, OPTIONS, PUT, DELETE');
                            xhr.setRequestHeader("Access-Control-Allow-Headers",
