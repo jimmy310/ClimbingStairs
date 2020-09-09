@@ -6,8 +6,8 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="js/jsqrscanner.nocache.js"></script>
-    <script type="text/javascript" src="js/lib.js?t=2"></script>
+    <script type="text/javascript" src="https://jimmy310.github.io/ClimbingStairs/js/jsqrscanner.nocache.js"></script>
+    <script type="text/javascript" src="https://jimmy310.github.io/ClimbingStairs/js/lib.js?t=2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
     <meta charset="UTF-8" />
     <!--<meta name="viewport" content="width=device-width, initial-scale=1">-->
@@ -109,7 +109,7 @@
         var lastScanStr = "";
         var existedArray;
         var barcodeStorageKey;
-        var apiUrl = 'https://web.wonderlandchina.com/pmicmobile/Cgmh/Stairs/';
+        var apiUrl = 'https://cgmhstair.wonderland.com.tw/Cgmh/Stairs/';
 
         main();
 
@@ -149,7 +149,7 @@
                     barcodeStorageKey = uuidv4();
                     setCookie('userKey', barcodeStorageKey, 30);
                 }
-                document.location.href = 'https://jimmy310.github.io/ClimbingStairs/index2.html?openExternalBrowser=1&userKey=' + barcodeStorageKey;
+                //document.location.href = 'https://jimmy310.github.io/ClimbingStairs/index2.html?openExternalBrowser=1&userKey=' + barcodeStorageKey;
             }
         }
 
@@ -230,6 +230,7 @@
                     newObject.sl = newScan.lv;//start level
                     newObject.v = newScan.ver;
                     newObject.diff = 0;
+                    newObject.id = 0;
                     setArray(newScan.inOut, newObject);
                     existedArray.push(newObject)
                     showMessage('刷條碼成功, 從' + (newScan.lv <= 0 ? '地下'+Math.abs(newScan.lv-1) : newScan.lv)+'樓進入');//因為地下1樓 是0, 地下2樓是-1
@@ -247,24 +248,35 @@
                     }
                 }
                 //store array
-                setArray();
-                refreshArray()
+                //setArray();
+                refreshArray();
                 showArray(10);
             }
         }
-        function refreshArray(){
-            
+        function refreshArray(){            
             var existed = localStorage.getItem('barcode');
             existedArray = JSON.parse(existed);
             if (existedArray == null) {
+                var queryData = { userKey: barcodeStorageKey };
                 $.ajax({
-                   type: 'GET',
+                   type: 'POST',
                    async: false,
-                   url: apiUrl + 'Get',
-                   data: { userKey: barcodeStorageKey },
+                   url: apiUrl + 'GetAll',
+                   data: JSON.stringify(queryData),
                    dataType: "json",
+                   //crossDomain: true,
+                   beforeSend: function (xhr) {
+                       xhr.setRequestHeader("Content-Type",
+                           'application/json');
+                           xhr.setRequestHeader("Access-Control-Allow-Origin",
+                           '*');
+                           xhr.setRequestHeader("Access-Control-Allow-Methods",
+                           'POST, GET, OPTIONS, PUT, DELETE');
+                           xhr.setRequestHeader("Access-Control-Allow-Headers",
+                           'Content-Type');
+                   },
                    success: function (result) {
-                      existedArray = JSON.parse(result);
+                      existedArray = result;
                       if(existedArray == null){
                          existedArray = new Array();
                       }
@@ -272,40 +284,47 @@
                 });
             }
             else{
-                
+                var data = {
+                    Stairs: existedArray,
+                    userkey: barcodeStorageKey,
+                };
                 $.ajax({
                    method: "POST",
                    type: JSON,
-                   url: apiUrl + 'CreateAll?userKey=' + barcodeStorageKey,
-                   data: JSON.stringify(existedArray),
+                   url: apiUrl + 'CreateAll',
+                   data: JSON.stringify(data),
+                   async: false,
+                   crossDomain: true,
                    beforeSend: function (xhr) {
                        xhr.setRequestHeader("AuthKey",
-                           $('66a4d9a1-7fe4-49a8-b4f5-884c96dffb23').val());
+                           '66a4d9a1-7fe4-49a8-b4f5-884c96dffb23');
                        xhr.setRequestHeader("Content-Type",
                            'application/json');
                    },
-                   success: function (data, textStatus, jqXHR) {
+                   success: function (result) {
                       localStorage.removeItem('barcode');
-                      alert('Remove localStorage success');
+                      existedArray = new Array();
+                      //alert('Remove localStorage success');
                    },
-                   error: function (jqXHR, textStatus, errorThrown) {
-                      alert(jqXHR);
-                      alert(textStatus);
-                      alert(errorThrown);
+                   error: function (error) {
+                      alert(error);
                    }
                 });
             }
         }
         function setArray(scanType, scanObject){
             var data = {};
-            data.id = scanObject.id;
-            data.userKey = barcodeStorageKey;
-            data.st = scanObject.st;
-            data.sl = scanObject.sl;
-            data.v = scanObject.v;
-            data.diff = scanObject.diff;
-            data.et = scanObject.et;
-            data.el = scanObject.el;
+            if(scanType == 'out'){
+               data.Id = scanObject.id;
+            }
+            data.UserKey = barcodeStorageKey;
+            data.St = scanObject.st;
+            data.Sl = scanObject.sl;
+            data.V = scanObject.v;
+            data.Diff = scanObject.diff;
+            data.Et = scanObject.et;
+            data.El = scanObject.el;
+            data.InOut = scanType;
             var url = apiUrl;
             if(scanType == 'in'){
                 url += 'Create';
@@ -316,36 +335,43 @@
             $.ajax({
                 method: "POST",
                 type: JSON,
-                url: apiUrl + 'Create',
+                url: url,
                 data: JSON.stringify(data),
+                async: false,
+                crossDomain: true,
                 beforeSend: function (xhr) {
                     xhr.setRequestHeader("AuthKey",
-                        $('66a4d9a1-7fe4-49a8-b4f5-884c96dffb23').val());
+                        '66a4d9a1-7fe4-49a8-b4f5-884c96dffb23');
                     xhr.setRequestHeader("Content-Type",
                         'application/json');
                 },
-                success: function (data, textStatus, jqXHR) {
+                success: function (ressult) {
                },
-               error: function (jqXHR, textStatus, errorThrown) {
-                  showMessage(errorThrown);
+               error: function (error) {
+                  showMessage(error);
                }
             });
         }
         function removeAll(){
             if(confirm("是否清除所有紀錄?")){
+                var queryData = { userKey: barcodeStorageKey };
                 $.ajax({
                    method: "POST",
-                   url: apiUrl + 'Delete?userKey=' + barcodeStorageKey,
+                   url: apiUrl + 'DeleteAll',
+                   data: JSON.stringify(queryData),
+                   type: JSON,
+                   async: false,
+                   crossDomain: true,
                    beforeSend: function (xhr) {
                        xhr.setRequestHeader("AuthKey",
-                           $('66a4d9a1-7fe4-49a8-b4f5-884c96dffb23').val());
+                           '66a4d9a1-7fe4-49a8-b4f5-884c96dffb23');
                        xhr.setRequestHeader("Content-Type",
                            'application/json');
                    },
-                   success: function (data, textStatus, jqXHR) {
+                   success: function (result) {
                    },
-                   error: function (jqXHR, textStatus, errorThrown) {
-                      showMessage(errorThrown);
+                   error: function (error) {
+                      showMessage(error);
                    }
                 });
                 refreshArray();
