@@ -151,7 +151,7 @@
                     barcodeStorageKey = uuidv4();
                     setCookie('userKey', barcodeStorageKey, 30);
                 }
-                //document.location.href = 'https://jimmy310.github.io/ClimbingStairs/index2.html?openExternalBrowser=1&userKey=' + barcodeStorageKey;
+                document.location.href = 'https://jimmy310.github.io/ClimbingStairs/index2.html?openExternalBrowser=1&userKey=' + barcodeStorageKey;
             }
             console.log("userKey=", userKey);
         }
@@ -303,7 +303,7 @@
                       //alert('Remove localStorage success');
                    },
                    error: function (error) {
-                      alert(error);
+                      alert(JSON.stringify(error));
                    }
                 });
             }
