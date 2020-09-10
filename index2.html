@@ -141,7 +141,7 @@
             var userKey = (new URLSearchParams(window.location.search)).get('userKey');
             if(userKey != null){
                barcodeStorageKey = userKey;
-                setCookie('userKey', barcodeStorageKey, 30);
+                setCookie('userKey', barcodeStorageKey, 365);
             }
             else{
                 userKey = getCookie('userKey');
@@ -151,7 +151,7 @@
                 else{
                     barcodeStorageKey = uuidv4();
                 }
-                setCookie('userKey', barcodeStorageKey, 30);
+                setCookie('userKey', barcodeStorageKey, 365);
                 document.location.href = 'https://jimmy310.github.io/ClimbingStairs/index2.html?openExternalBrowser=1&userKey=' + barcodeStorageKey;
             }
             console.log("userKey=", userKey);
