@@ -109,7 +109,9 @@
         var lastScanStr = "";
         var existedArray;
         var barcodeStorageKey;
+        //var apiUrl = 'http://marshung/Cgmh/Stairs/';
         var apiUrl = 'https://cgmhstair.wonderland.com.tw/Cgmh/Stairs/';
+        //var apiUrl = 'http://pmictpap/Cgmh/Stairs/';
 
         main();
 
@@ -151,6 +153,7 @@
                 }
                 //document.location.href = 'https://jimmy310.github.io/ClimbingStairs/index2.html?openExternalBrowser=1&userKey=' + barcodeStorageKey;
             }
+            console.log("userKey=", userKey);
         }
 
         function uuidv4() {
@@ -253,6 +256,7 @@
                 showArray(10);
             }
         }
+
         function refreshArray(){            
             var existed = localStorage.getItem('barcode');
             existedArray = JSON.parse(existed);
@@ -264,18 +268,10 @@
                    url: apiUrl + 'GetAll',
                    data: JSON.stringify(queryData),
                    dataType: "json",
-                   //crossDomain: true,
-                   beforeSend: function (xhr) {
-                       xhr.setRequestHeader("Content-Type",
-                           'application/json');
-                           xhr.setRequestHeader("Access-Control-Allow-Origin",
-                           'https://jimmy310.github.io');
-                           xhr.setRequestHeader("Access-Control-Allow-Methods",
-                           'POST, GET, OPTIONS, PUT, DELETE');
-                           xhr.setRequestHeader("Access-Control-Allow-Headers",
-                           'Content-Type');
-                   },
-                   success: function (result) {
+                   crossDomain: true,
+                   //contentType: "application/json",
+                    success: function (result) {
+                        console.log('ok', result)
                       existedArray = result;
                       if(existedArray == null){
                          existedArray = new Array();
@@ -333,19 +329,22 @@
                 url += 'Edit';
             }
             $.ajax({
-                method: "POST",
-                type: JSON,
+                type: 'POST',
+                //method: "POST",
+                //type: JSON,
+                dataType: "json",
                 url: url,
                 data: JSON.stringify(data),
                 async: false,
                 crossDomain: true,
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader("AuthKey",
-                        '66a4d9a1-7fe4-49a8-b4f5-884c96dffb23');
-                    xhr.setRequestHeader("Content-Type",
-                        'application/json');
-                },
+                //beforeSend: function (xhr) {
+                //    xhr.setRequestHeader("AuthKey",
+                //        '66a4d9a1-7fe4-49a8-b4f5-884c96dffb23');
+                //    xhr.setRequestHeader("Content-Type",
+                //        'application/json');
+                //},
                 success: function (ressult) {
+                    console.log('success');
                },
                error: function (error) {
                   showMessage(error);
@@ -362,18 +361,20 @@
                    type: JSON,
                    async: false,
                    crossDomain: true,
-                   beforeSend: function (xhr) {
-                       xhr.setRequestHeader("AuthKey",
-                           '66a4d9a1-7fe4-49a8-b4f5-884c96dffb23');
-                       xhr.setRequestHeader("Content-Type",
-                           'application/json');
-                   },
-                   success: function (result) {
-                   },
+                   //beforeSend: function (xhr) {
+                   //    xhr.setRequestHeader("AuthKey",
+                   //        '66a4d9a1-7fe4-49a8-b4f5-884c96dffb23');
+                   //    xhr.setRequestHeader("Content-Type",
+                   //        'application/json');
+                   //},
+                    success: function (result) {
+                        console.log('removeall success')
+                        existedArray = [];                   },
                    error: function (error) {
                       showMessage(error);
                    }
                 });
+                console.log('ready to refreshArray')
                 refreshArray();
                 showArray();
             }
@@ -419,6 +420,11 @@
         }
         function showSummaryNew(){
             if (existedArray == null || existedArray.length == 0) {
+                document.getElementById("firstSt").innerHTML = '';
+                document.getElementById("totalSum").innerHTML = '0';
+                document.getElementById("lastEt").innerHTML = '';
+                document.getElementById("totalUpSum").innerHTML = '0';
+                document.getElementById("totalDownSum").innerHTML = '0';
                 return;
             }
             document.getElementById("firstSt").innerHTML = moment(existedArray[0].st).format('MM-DD HH:mm:ss') ;
