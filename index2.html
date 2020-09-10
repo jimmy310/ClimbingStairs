@@ -291,12 +291,6 @@
                    data: JSON.stringify(data),
                    async: false,
                    crossDomain: true,
-                   beforeSend: function (xhr) {
-                       xhr.setRequestHeader("AuthKey",
-                           '66a4d9a1-7fe4-49a8-b4f5-884c96dffb23');
-                       xhr.setRequestHeader("Content-Type",
-                           'application/json');
-                   },
                    success: function (result) {
                       localStorage.removeItem('barcode');
                       existedArray = new Array();
