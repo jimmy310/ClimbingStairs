@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>長庚職場運動趣</title>
+    <title>長庚職場運動趣V2</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
@@ -119,13 +119,13 @@
             try {
                 getUserKey();
                 //addMessage(navigator.userAgent.toLowerCase() + "<br>");
-                addMessage("1. 檢查儲存空間..");
-                refreshArray();
+                addMessage("1. 取得個人ID..");
+                refreshArrayBegin();
                 showArray(10);
                 addMessage("<span style='color:blue'>Ok!</span>");
                 //addMessage(' (儲存空間:'+localStorageSpace()+')');
                 addMessage("<br>");
-                addMessage("2. 開啟相機..");
+                addMessage("3. 開啟相機..");
                 window.addEventListener('focus', resumeCarmera);
                 window.addEventListener('blur', stopCarmera);
             }
@@ -257,7 +257,7 @@
             }
         }
 
-        function refreshArray(){            
+        function refreshArrayBegin(){
             var existed = localStorage.getItem('barcode');
             existedArray = JSON.parse(existed);
             if (existedArray == null) {
@@ -271,11 +271,14 @@
                    crossDomain: true,
                    //contentType: "application/json",
                     success: function (result) {
-                        console.log('ok', result)
                       existedArray = result;
                       if(existedArray == null){
                          existedArray = new Array();
                       }
+                      showMessage('2. 檢查網路成功');
+                   },
+                   error: function (error){
+                      showMessage('2. 檢查網路失敗');
                    }
                 });
             }
@@ -299,6 +302,25 @@
                    }
                 });
             }
+        }
+
+        function refreshArray(){            
+                var queryData = { userKey: barcodeStorageKey };
+                $.ajax({
+                   type: 'POST',
+                   async: false,
+                   url: apiUrl + 'GetAll',
+                   data: JSON.stringify(queryData),
+                   dataType: "json",
+                   crossDomain: true,
+                   //contentType: "application/json",
+                    success: function (result) {
+                      existedArray = result;
+                      if(existedArray == null){
+                         existedArray = new Array();
+                      }
+                   }
+                });
         }
         function setArray(scanType, scanObject){
             var data = {};
