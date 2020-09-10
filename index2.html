@@ -150,8 +150,8 @@
                 }
                 else{
                     barcodeStorageKey = uuidv4();
-                    setCookie('userKey', barcodeStorageKey, 30);
                 }
+                setCookie('userKey', barcodeStorageKey, 30);
                 document.location.href = 'https://jimmy310.github.io/ClimbingStairs/index2.html?openExternalBrowser=1&userKey=' + barcodeStorageKey;
             }
             console.log("userKey=", userKey);
@@ -297,8 +297,10 @@
                    crossDomain: true,
                    success: function (result) {
                       localStorage.removeItem('barcode');
+                      addMessage('2. 檢查網路成功..');
                    },
                    error: function (error) {
+                      addMessage('2. 檢查網路失敗..');
                       alert(JSON.stringify(error));
                    }
                 });
