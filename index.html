@@ -1,10 +1,13 @@
-
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <title>長庚職場運動趣</title>
-    <script type="text/javascript" src="js/jsqrscanner.nocache.js"></script>
-    <script type="text/javascript" src="js/lib.js?t=2"></script>
+    <title>長庚職場運動趣V2</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="https://jimmy310.github.io/ClimbingStairs/js/jsqrscanner.nocache.js"></script>
+    <script type="text/javascript" src="https://jimmy310.github.io/ClimbingStairs/js/lib.js?t=2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>
     <meta charset="UTF-8" />
     <!--<meta name="viewport" content="width=device-width, initial-scale=1">-->
@@ -27,7 +30,7 @@
     <div class="container-fluid">
         <img class="mt-3" src="https://www.cgmh.org.tw/images/00-logo-icon/logo.svg" />
         <hr class="my-1" />
-        <h1>長庚職場運動趣</h1>
+        <h1>長庚職場運動趣V2</h1>
         <div class="row">
             <div class="col-12" id='message'>
                 <div id="message"></div>
@@ -103,32 +106,85 @@
 
     <script type="text/javascript">
         var jbScanner
-        var lastScanStr="";
+        var lastScanStr = "";
         var existedArray;
-        var barcodeStorageKey = 'barcode'
+        var barcodeStorageKey;
+        //var apiUrl = 'http://marshung/Cgmh/Stairs/';
+        var apiUrl = 'https://cgmhstair.wonderland.com.tw/Cgmh/Stairs/';
+        //var apiUrl = 'http://pmictpap/Cgmh/Stairs/';
 
         main();
 
         function main(){
             try {
+                getUserKey();
                 //addMessage(navigator.userAgent.toLowerCase() + "<br>");
-                addMessage("1. 檢查本地儲存空間..");
-                if (typeof (Storage) !== "undefined") {
-                    refreshArray();
-                    showArray(10);
-                    addMessage("<span style='color:blue'>Ok!</span>")
-                } else {
-                    addMessage("<span style='color:red'>Failed, 無法存取localStorage<span>")
-                }
-                addMessage(' (儲存空間:'+localStorageSpace()+')');
+                addMessage("1. 產生識別碼..");
                 addMessage("<br>");
-                addMessage("2. 開啟相機..");
+                refreshArrayBegin();
+                showArray(10);
+                addMessage("<span style='color:blue'>Ok!</span>");
+                //addMessage(' (儲存空間:'+localStorageSpace()+')');
+                addMessage("<br>");
+                addMessage("3. 開啟相機..");
                 window.addEventListener('focus', resumeCarmera);
                 window.addEventListener('blur', stopCarmera);
             }
             catch (e) {
                 alert(e);
             }
+        }
+
+        
+
+        function getUserKey(){
+            var userKey = (new URLSearchParams(window.location.search)).get('userKey');
+            if(userKey != null){
+               barcodeStorageKey = userKey;
+                setCookie('userKey', barcodeStorageKey, 365);
+            }
+            else{
+                userKey = getCookie('userKey');
+                if(userKey != ''){
+                    barcodeStorageKey = userKey;
+                }
+                else{
+                    barcodeStorageKey = uuidv4();
+                }
+                setCookie('userKey', barcodeStorageKey, 365);
+                document.location.href = 'https://jimmy310.github.io/ClimbingStairs/?openExternalBrowser=1&userKey=' + barcodeStorageKey;
+            }
+            console.log("userKey=", userKey);
+        }
+
+        function uuidv4() {
+           return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+              (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+           );
+        }
+
+
+        function setCookie(cname, cvalue, exdays) {
+           var d = new Date();
+           d.setTime(d.getTime() + (exdays*24*60*60*1000));
+           var expires = "expires="+ d.toUTCString();
+           document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+        }
+
+        function getCookie(cname) {
+           var name = cname + "=";
+           var decodedCookie = decodeURIComponent(document.cookie);
+           var ca = decodedCookie.split(';');
+           for(var i = 0; i <ca.length; i++) {
+              var c = ca[i];
+              while (c.charAt(0) == ' ') {
+                 c = c.substring(1);
+              }
+              if (c.indexOf(name) == 0) {
+                 return c.substring(name.length, c.length);
+              }
+           }
+           return '';
         }
 
          function resumeCarmera() {
@@ -145,8 +201,8 @@
         }
         //enter staircase
         function scan(str) {
-        		try {
-							 document.getElementById('myAudio').play();
+        	try {
+					document.getElementById('myAudio').play();
 		        } catch (e) {
 		
 		        }
@@ -178,6 +234,8 @@
                     newObject.sl = newScan.lv;//start level
                     newObject.v = newScan.ver;
                     newObject.diff = 0;
+                    newObject.id = 0;
+                    setArray(newScan.inOut, newObject);
                     existedArray.push(newObject)
                     showMessage('刷條碼成功, 從' + (newScan.lv <= 0 ? '地下'+Math.abs(newScan.lv-1) : newScan.lv)+'樓進入');//因為地下1樓 是0, 地下2樓是-1
 
@@ -189,25 +247,151 @@
                         lastObject.et = new Date();//end time
                         lastObject.el = newScan.lv;//end level
                         lastObject.diff = Math.abs(lastObject.el - lastObject.sl);//diff
+                        setArray(newScan.inOut, lastObject);
                         showMessage('刷條碼成功, 從' + (newScan.lv <= 0 ? '地下' + Math.abs(newScan.lv - 1) : newScan.lv)+'樓離開');
                     }
                 }
                 //store array
-                localStorage.setItem(barcodeStorageKey, JSON.stringify(existedArray));
-                refreshArray()
+                //setArray();
+                refreshArray();
                 showArray(10);
             }
         }
-        function refreshArray(){
-            var existed = localStorage.getItem(barcodeStorageKey);
+
+        function refreshArrayBegin(){
+            var existed = localStorage.getItem('barcode');
             existedArray = JSON.parse(existed);
             if (existedArray == null) {
-                existedArray = new Array();
+                var queryData = { userKey: barcodeStorageKey };
+                $.ajax({
+                   type: 'POST',
+                   async: false,
+                   url: apiUrl + 'GetAll',
+                   data: JSON.stringify(queryData),
+                   dataType: "json",
+                   crossDomain: true,
+                   //contentType: "application/json",
+                    success: function (result) {
+                      existedArray = result;
+                      if(existedArray == null){
+                         existedArray = new Array();
+                      }
+                      addMessage('2. 檢查網路成功..');
+                   },
+                   error: function (error){
+                      addMessage('2. 檢查網路失敗..');
+                   }
+                });
             }
+            else{
+                var data = {
+                    Stairs: existedArray,
+                    userkey: barcodeStorageKey,
+                };
+                $.ajax({
+                   method: "POST",
+                   type: JSON,
+                   url: apiUrl + 'CreateAll',
+                   data: JSON.stringify(data),
+                   async: false,
+                   crossDomain: true,
+                   success: function (result) {
+                      localStorage.removeItem('barcode');
+                      addMessage('2. 檢查網路成功..');
+                   },
+                   error: function (error) {
+                      addMessage('2. 檢查網路失敗..');
+                      alert(JSON.stringify(error));
+                   }
+                });
+            }
+        }
+
+        function refreshArray(){            
+                var queryData = { userKey: barcodeStorageKey };
+                $.ajax({
+                   type: 'POST',
+                   async: false,
+                   url: apiUrl + 'GetAll',
+                   data: JSON.stringify(queryData),
+                   dataType: "json",
+                   crossDomain: true,
+                   //contentType: "application/json",
+                    success: function (result) {
+                      existedArray = result;
+                      if(existedArray == null){
+                         existedArray = new Array();
+                      }
+                   }
+                });
+        }
+        function setArray(scanType, scanObject){
+            var data = {};
+            if(scanType == 'out'){
+               data.Id = scanObject.id;
+            }
+            data.UserKey = barcodeStorageKey;
+            data.St = scanObject.st;
+            data.Sl = scanObject.sl;
+            data.V = scanObject.v;
+            data.Diff = scanObject.diff;
+            data.Et = scanObject.et;
+            data.El = scanObject.el;
+            data.InOut = scanType;
+            var url = apiUrl;
+            if(scanType == 'in'){
+                url += 'Create';
+            }
+            else{
+                url += 'Edit';
+            }
+            $.ajax({
+                type: 'POST',
+                //method: "POST",
+                //type: JSON,
+                dataType: "json",
+                url: url,
+                data: JSON.stringify(data),
+                async: false,
+                crossDomain: true,
+                //beforeSend: function (xhr) {
+                //    xhr.setRequestHeader("AuthKey",
+                //        '66a4d9a1-7fe4-49a8-b4f5-884c96dffb23');
+                //    xhr.setRequestHeader("Content-Type",
+                //        'application/json');
+                //},
+                success: function (ressult) {
+                    console.log('success');
+               },
+               error: function (error) {
+                  showMessage(error);
+               }
+            });
         }
         function removeAll(){
             if(confirm("是否清除所有紀錄?")){
-                localStorage.removeItem(barcodeStorageKey);
+                var queryData = { userKey: barcodeStorageKey };
+                $.ajax({
+                   method: "POST",
+                   url: apiUrl + 'DeleteAll',
+                   data: JSON.stringify(queryData),
+                   type: JSON,
+                   async: false,
+                   crossDomain: true,
+                   //beforeSend: function (xhr) {
+                   //    xhr.setRequestHeader("AuthKey",
+                   //        '66a4d9a1-7fe4-49a8-b4f5-884c96dffb23');
+                   //    xhr.setRequestHeader("Content-Type",
+                   //        'application/json');
+                   //},
+                    success: function (result) {
+                        console.log('removeall success')
+                        existedArray = [];                   },
+                   error: function (error) {
+                      showMessage(error);
+                   }
+                });
+                console.log('ready to refreshArray')
                 refreshArray();
                 showArray();
             }
@@ -224,8 +408,8 @@
                 var min = Math.min(existedArray.length, topNo);
                 for (var i = (existedArray.length - 1); i >= 0; i--) {
                     var existedScan = existedArray[i];
-                    var exitInfo = existedScan.el!=null ? existedScan.el + " ("+existedScan.diff+")" : "";
-                    result += `<tr><td>${(i+1)}</td><td>${moment(existedScan.st).format('MM-DD HH:mm:ss')}</td><td>${existedScan.sl}→${exitInfo}</td><td></td></tr>`;
+                    var exitInfo = existedScan.el!=null ? $("<textarea/>").html(existedScan.el).html() + " ("+$("<textarea/>").html(existedScan.diff).html()+")" : "";
+                    result += `<tr><td>${(i+1)}</td><td>${moment(existedScan.st).format('MM-DD HH:mm:ss')}</td><td>${$("<textarea/>").html(existedScan.sl).html()}→${exitInfo}</td><td></td></tr>`;
                 }
                 result += "</table>";
                 list.innerHTML = result;
@@ -253,6 +437,11 @@
         }
         function showSummaryNew(){
             if (existedArray == null || existedArray.length == 0) {
+                document.getElementById("firstSt").innerHTML = '';
+                document.getElementById("totalSum").innerHTML = '0';
+                document.getElementById("lastEt").innerHTML = '';
+                document.getElementById("totalUpSum").innerHTML = '0';
+                document.getElementById("totalDownSum").innerHTML = '0';
                 return;
             }
             document.getElementById("firstSt").innerHTML = moment(existedArray[0].st).format('MM-DD HH:mm:ss') ;
@@ -365,7 +554,3 @@
     </script>
 </body>
 </html>
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
