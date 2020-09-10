@@ -120,6 +120,7 @@
                 getUserKey();
                 //addMessage(navigator.userAgent.toLowerCase() + "<br>");
                 addMessage("1. 取得個人ID..");
+                addMessage("<br>");
                 refreshArrayBegin();
                 showArray(10);
                 addMessage("<span style='color:blue'>Ok!</span>");
@@ -275,10 +276,10 @@
                       if(existedArray == null){
                          existedArray = new Array();
                       }
-                      addMessage('2. 檢查網路成功');
+                      addMessage('2. 檢查網路成功..');
                    },
                    error: function (error){
-                      addMessage('2. 檢查網路失敗');
+                      addMessage('2. 檢查網路失敗..');
                    }
                 });
             }
