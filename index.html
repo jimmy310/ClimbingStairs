@@ -236,7 +236,9 @@
                     newObject.diff = 0;
                     newObject.id = 0;
                     setArray(newScan.inOut, newObject);
-                    existedArray.push(newObject)
+                    existedArray.push(newObject);
+                    refreshArray();
+                    showArray(10);
                     showMessage('刷條碼成功, 從' + (newScan.lv <= 0 ? '地下'+Math.abs(newScan.lv-1) : newScan.lv)+'樓進入');//因為地下1樓 是0, 地下2樓是-1
 
                 } else if (newScan.inOut == 'out') {
@@ -248,13 +250,13 @@
                         lastObject.el = newScan.lv;//end level
                         lastObject.diff = Math.abs(lastObject.el - lastObject.sl);//diff
                         setArray(newScan.inOut, lastObject);
+                        refreshArray();
+                        showArray(10);
                         showMessage('刷條碼成功, 從' + (newScan.lv <= 0 ? '地下' + Math.abs(newScan.lv - 1) : newScan.lv)+'樓離開');
                     }
                 }
                 //store array
                 //setArray();
-                refreshArray();
-                showArray(10);
             }
         }
 
